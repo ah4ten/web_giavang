@@ -1,4 +1,4 @@
-let currentMessage = { type: "gold", text: "SJC", speed: 50 };
+let currentMessage = { type: "custom", text: "Khoi dong he thong", speed: 50, delayTime: 5 };
 
 export default function handler(req, res) {
   if (req.method === "POST") {
