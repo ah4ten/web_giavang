@@ -1,22 +1,12 @@
-let cache = {
-  mode: "auto", // hoặc "manual"
-  message: { type: "gold", text: "VANG MIENG SJC" },
-};
+let currentMessage = { type: "gold", text: "SJC", speed: 50 };
 
-export const config = { runtime: "edge" };
-
-export default async function handler(req) {
+export default function handler(req, res) {
   if (req.method === "POST") {
-    const body = await req.json();
-    if (body.mode) cache.mode = body.mode;
-    if (body.message) cache.message = body.message;
-    cache.time = new Date().toISOString();
-    return new Response(JSON.stringify({ status: "ok", message: cache }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    currentMessage = req.body.message;
+    return res.status(200).json({ success: true, message: currentMessage });
   }
-
-  return new Response(JSON.stringify(cache), {
-    headers: { "Content-Type": "application/json" },
-  });
+  if (req.method === "GET") {
+    return res.status(200).json({ message: currentMessage });
+  }
+  res.status(405).end();
 }
