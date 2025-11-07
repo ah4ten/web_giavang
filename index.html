@@ -6,76 +6,82 @@
 <title>Bảng Điều Khiển LED</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
-    background: #0e0e0e;
-    color: white;
-    text-align: center;
-    margin: 0; padding: 30px;
+    background: #f5f8ff;
+    font-family: "Segoe UI", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    color: #222;
   }
-  h2 { color: #00ff7f; }
+  h1 {
+    color: #004aad;
+    margin-bottom: 30px;
+  }
   .card {
-    background: #1c1c1c;
-    padding: 20px;
-    margin: 10px auto;
-    border-radius: 12px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 24px;
     width: 360px;
-    box-shadow: 0 0 10px #222;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  label {
+    font-weight: 600;
+    margin-bottom: 4px;
   }
   input, select {
-    width: 90%;
-    padding: 8px;
-    margin: 6px 0;
-    border-radius: 8px;
-    border: none;
-    background: #222;
-    color: white;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 15px;
   }
   button {
-    background: #00ff7f;
+    background: #0078ff;
+    color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 16px;
     cursor: pointer;
-    font-weight: bold;
-    margin-top: 8px;
+    transition: 0.2s;
   }
-  button:hover { background: #03c06b; }
-  #status {
-    color: #00ffff;
-    margin-top: 10px;
-  }
+  button:hover { background: #005ecc; }
+  #status { text-align: center; margin-top: 8px; color: #006b2d; font-weight: 600; }
 </style>
 </head>
 <body>
-
-<h2>⚙️ BẢNG ĐIỀU KHIỂN LED ESP32</h2>
-
+<h1>⚙️ BẢNG ĐIỀU KHIỂN LED ESP32</h1>
 <div class="card">
-  <label>Chế độ hiển thị:</label>
+  <label>Chế độ hiển thị</label>
   <select id="mode">
     <option value="manual">Thủ công</option>
     <option value="auto">Tự động (Giá vàng)</option>
   </select>
 
-  <label>Nội dung hiển thị:</label>
+  <label>Nội dung hiển thị</label>
   <input id="message" type="text" value="XIN CHAO QUY KHACH">
 
-  <label>Loại vàng (chỉ khi auto):</label>
+  <label>Loại vàng (chỉ khi auto)</label>
   <select id="gold">
     <option value="SJC">SJC</option>
     <option value="NHAN">Nhẫn tròn</option>
   </select>
 
-  <label>Tốc độ (1–100):</label>
-  <input id="speed" type="number" value="50" min="1" max="100">
+  <label>Tốc độ chạy chữ (1–100)</label>
+  <input id="speed" type="range" min="1" max="100" value="50" oninput="speedValue.innerText=this.value">
+  <div>Tốc độ hiện tại: <span id="speedValue">50</span></div>
 
-  <label>Delay giữa 2 vòng (ms):</label>
+  <label>Độ trễ giữa các lần (ms)</label>
   <input id="delay" type="number" value="3000">
 
-  <label>Thời gian hiển thị (ms):</label>
+  <label>Thời gian hiển thị (ms)</label>
   <input id="duration" type="number" value="10000">
 
-  <button onclick="sendData()">💾 Cập nhật</button>
+  <button onclick="sendData()">💾 Cập nhật LED</button>
   <div id="status"></div>
 </div>
 
@@ -89,7 +95,6 @@ async function sendData() {
     delay: parseInt(document.getElementById("delay").value),
     duration: parseInt(document.getElementById("duration").value)
   };
-
   try {
     const res = await fetch("/api/message", {
       method: "POST",
@@ -97,8 +102,8 @@ async function sendData() {
       body: JSON.stringify(data)
     });
     const json = await res.json();
-    document.getElementById("status").innerText = "✅ Đã gửi thành công!";
-  } catch (err) {
+    document.getElementById("status").innerText = "✅ Đã gửi lên ESP32!";
+  } catch {
     document.getElementById("status").innerText = "❌ Lỗi gửi dữ liệu!";
   }
 }
