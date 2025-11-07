@@ -1,18 +1,28 @@
-import { readFileSync, writeFileSync } from "fs";
+// /api/message.js
+let state = {
+  mode: "manual",
+  gold: "SJC",
+  message: "Xin chao quy khach!",
+  speed: 50,
+  delay: 3000,
+};
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   if (req.method === "POST") {
     const { mode, gold, message, speed, delay } = req.body;
-
-    // Ghi cấu hình vào file (ESP32 có thể đọc)
-    const config = { mode, gold, message, speed, delay };
-    writeFileSync("/data/led_config.json", JSON.stringify(config, null, 2));
-
-    // Gửi tín hiệu ngay cho ESP32
-    console.log("🟢 Đã cập nhật:", config);
-
-    res.status(200).json({ status: "ok" });
-  } else {
-    res.status(405).json({ error: "Phương thức không hợp lệ" });
+    if (mode) state.mode = mode;
+    if (gold) state.gold = gold;
+    if (message) state.message = message;
+    if (speed) state.speed = speed;
+    if (delay) state.delay = delay;
+    return res.status(200).json({ success: true, state });
   }
+
+  if (req.method === "GET") {
+    // 👉 Thêm đoạn này cho ESP32 đọc được
+    return res.status(200).json(state);
+  }
+
+  // Nếu không phải GET hoặc POST
+  return res.status(405).json({ error: "Method Not Allowed" });
 }
