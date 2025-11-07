@@ -1,180 +1,111 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dieu khien LED IoT</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #111;
-    color: white;
-    text-align: center;
-    padding: 20px;
-  }
+import { useState } from "react";
+import axios from "axios";
 
-  h1 { color: gold; }
+export default function App() {
+  const [mode, setMode] = useState("manual");
+  const [text, setText] = useState("");
+  const [speed, setSpeed] = useState(50);
+  const [delay, setDelay] = useState(3000);
+  const [goldType, setGoldType] = useState("SJC");
 
-  .container {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    margin-top: 20px;
-  }
+  const sendUpdate = async (data) => {
+    await axios.post("/api/message", data);
+  };
 
-  .mode {
-    width: 45%;
-    min-width: 300px;
-    background-color: #222;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 0 10px #555;
-  }
+  const handleMode = (m) => {
+    setMode(m);
+    sendUpdate({ mode: m, message: text, gold: goldType, speed, delay });
+  };
 
-  button {
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 20px;
-    margin: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 16px;
-  }
+  const handleSend = () => {
+    sendUpdate({ mode, message: text, gold: goldType, speed, delay });
+  };
 
-  button:hover:not(:disabled) {
-    background-color: gold;
-    color: black;
-  }
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-gray-800 p-6">
+      <h1 className="text-3xl font-bold mb-6">Dieu khien hien thi LED</h1>
 
-  button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
+      {/* CHON CHE DO */}
+      <div className="flex gap-4 mb-6">
+        <button
+          onClick={() => handleMode("manual")}
+          className={`px-6 py-3 rounded-xl text-lg font-semibold ${
+            mode === "manual" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
+        >
+          Che do Thu cong
+        </button>
+        <button
+          onClick={() => handleMode("auto")}
+          className={`px-6 py-3 rounded-xl text-lg font-semibold ${
+            mode === "auto" ? "bg-green-500 text-white" : "bg-gray-200"
+          }`}
+        >
+          Che do Tu dong
+        </button>
+      </div>
 
-  input, select {
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    margin-top: 10px;
-    width: 80%;
-  }
+      {/* MANUAL MODE */}
+      <div className={`${mode !== "manual" && "opacity-40 pointer-events-none"} w-full max-w-lg mb-8`}>
+        <h2 className="font-semibold mb-2 text-xl">Noi dung hien thi</h2>
+        <textarea
+          className="w-full p-3 border rounded-xl"
+          rows="3"
+          placeholder="Nhap chuoi hien thi..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <button
+          onClick={handleSend}
+          className="w-full mt-3 py-3 bg-blue-500 text-white rounded-xl font-semibold"
+        >
+          Cap nhat len LED
+        </button>
+      </div>
 
-  .speed-control {
-    margin-top: 20px;
-    background: #333;
-    padding: 15px;
-    border-radius: 10px;
-  }
+      {/* AUTO MODE */}
+      <div className={`${mode !== "auto" && "opacity-40 pointer-events-none"} w-full max-w-lg`}>
+        <h2 className="font-semibold mb-2 text-xl">Loai vang</h2>
+        <div className="flex gap-4 mb-3">
+          <button
+            onClick={() => { setGoldType("SJC"); handleSend(); }}
+            className={`flex-1 py-3 rounded-xl font-semibold ${
+              goldType === "SJC" ? "bg-yellow-400" : "bg-gray-200"
+            }`}
+          >
+            SJC
+          </button>
+          <button
+            onClick={() => { setGoldType("NHAN"); handleSend(); }}
+            className={`flex-1 py-3 rounded-xl font-semibold ${
+              goldType === "NHAN" ? "bg-yellow-400" : "bg-gray-200"
+            }`}
+          >
+            Nhan Tron
+          </button>
+        </div>
+      </div>
 
-  .status {
-    margin-top: 25px;
-    color: #aaa;
-  }
-</style>
-</head>
-<body>
-<h1>Bang Dieu Khien LED IoT</h1>
-
-<div class="container">
-  <!-- AUTO MODE -->
-  <div class="mode" id="autoMode">
-    <h2>Che do Tu dong</h2>
-    <button id="autoBtn">Bat Auto</button><br>
-    <button class="autoAction" id="sjcBtn" disabled>Vang Mieng SJC</button>
-    <button class="autoAction" id="nhanBtn" disabled>Vang Nhan</button>
-  </div>
-
-  <!-- MANUAL MODE -->
-  <div class="mode" id="manualMode">
-    <h2>Che do Thu cong</h2>
-    <button id="manualBtn">Bat Manual</button><br>
-    <input type="text" id="customText" placeholder="Nhap noi dung hien thi">
-    <button id="sendCustom" disabled>Gui Noi Dung</button>
-  </div>
-</div>
-
-<div class="speed-control">
-  <h3>Cai dat chung</h3>
-  <label>Toc do chay chu: </label>
-  <select id="speedSelect">
-    <option value="20">Cham</option>
-    <option value="50" selected>Trung binh</option>
-    <option value="100">Nhanh</option>
-  </select>
-
-  <br><br>
-  <label>Thoi gian cho giua cac lan hien thi (giay): </label>
-  <select id="delaySelect">
-    <option value="2">2s</option>
-    <option value="5" selected>5s</option>
-    <option value="10">10s</option>
-    <option value="15">15s</option>
-  </select>
-</div>
-
-<div class="status" id="status">
-  Trang thai: Dung - Toc do: 50 - Delay: 5s
-</div>
-
-<script>
-let currentMode = "";
-let currentSpeed = 50;
-let currentDelay = 5;
-
-async function sendMessage(type, text) {
-  await fetch("/api/message", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      message: { type, text, speed: currentSpeed, delayTime: currentDelay }
-    })
-  });
+      {/* CAI DAT CHUNG */}
+      <div className="w-full max-w-lg mt-8 border-t pt-6">
+        <h2 className="font-semibold mb-3 text-xl">Cai dat chung</h2>
+        <label className="block mb-2">Toc do chay chu: {speed}</label>
+        <input
+          type="range"
+          min="1"
+          max="100"
+          value={speed}
+          onChange={(e) => { setSpeed(e.target.value); handleSend(); }}
+          className="w-full mb-4"
+        />
+        <label className="block mb-2">Thoi gian delay (ms): {delay}</label>
+        <input
+          type="number"
+          value={delay}
+          onChange={(e) => { setDelay(e.target.value); handleSend(); }}
+          className="w-full border rounded-xl p-2"
+        />
+      </div>
+    </div>
+  );
 }
-
-function updateStatus(text) {
-  document.getElementById("status").innerText =
-    `Trang thai: ${text} - Toc do: ${currentSpeed} - Delay: ${currentDelay}s`;
-}
-
-document.getElementById("autoBtn").onclick = () => {
-  currentMode = "auto";
-  document.querySelectorAll(".autoAction").forEach(b => b.disabled = false);
-  document.getElementById("sendCustom").disabled = true;
-  document.getElementById("manualBtn").disabled = false;
-  document.getElementById("autoBtn").disabled = true;
-  updateStatus("Auto");
-};
-
-document.getElementById("manualBtn").onclick = () => {
-  currentMode = "manual";
-  document.querySelectorAll(".autoAction").forEach(b => b.disabled = true);
-  document.getElementById("sendCustom").disabled = false;
-  document.getElementById("manualBtn").disabled = true;
-  document.getElementById("autoBtn").disabled = false;
-  updateStatus("Manual");
-};
-
-document.getElementById("speedSelect").onchange = (e) => {
-  currentSpeed = parseInt(e.target.value);
-  updateStatus(currentMode || "Dung");
-  sendMessage(currentMode === "manual" ? "custom" : "gold", "CAP NHAT TOC DO");
-};
-
-document.getElementById("delaySelect").onchange = (e) => {
-  currentDelay = parseInt(e.target.value);
-  updateStatus(currentMode || "Dung");
-  sendMessage(currentMode === "manual" ? "custom" : "gold", "CAP NHAT DELAY");
-};
-
-document.getElementById("sjcBtn").onclick = () => sendMessage("gold", "SJC");
-document.getElementById("nhanBtn").onclick = () => sendMessage("gold", "NHAN");
-
-document.getElementById("sendCustom").onclick = () => {
-  const text = document.getElementById("customText").value.trim();
-  if (text !== "") sendMessage("custom", text);
-};
-</script>
-</body>
-</html>
