@@ -3,7 +3,7 @@ let state = {
   mode: "manual",
   gold: "SJC",
   message: "Xin chao quy khach!",
-  speed: 500,
+  speed: 50,
   delay: 3000,
 };
 
