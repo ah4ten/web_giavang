@@ -3,110 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bảng Điều Khiển LED</title>
+<title>Bảng Điều Khiển LED ESP32</title>
 <style>
   body {
     background: #f5f8ff;
     font-family: "Segoe UI", sans-serif;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 5vw;
     color: #222;
   }
-  h1 {
-    color: #004aad;
-    margin-bottom: 30px;
-  }
-  .card {
-    background: white;
-    border-radius: 16px;
+
+  .container {
+    width: clamp(320px, 60vw, 500px);
+    background: #fff;
+    border-radius: 20px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    padding: 24px;
-    width: 360px;
+    padding: 3vw;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 1.2rem;
   }
+
+  h1 {
+    color: #004aad;
+    font-size: clamp(1.2rem, 2vw, 1.8rem);
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
   label {
     font-weight: 600;
     margin-bottom: 4px;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
   }
+
   input, select {
     width: 100%;
-    padding: 10px;
+    padding: 0.7rem;
     border-radius: 10px;
     border: 1px solid #ccc;
-    font-size: 15px;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+    box-sizing: border-box;
   }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
   button {
     background: #0078ff;
     color: white;
     border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 16px;
+    padding: 0.8rem;
+    border-radius: 12px;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.2s;
   }
-  button:hover { background: #005ecc; }
-  #status { text-align: center; margin-top: 8px; color: #006b2d; font-weight: 600; }
+
+  button:hover {
+    background: #005ecc;
+    transform: translateY(-1px);
+  }
+
+  #status {
+    text-align: center;
+    color: #006b2d;
+    font-weight: 600;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+  }
+
+  .divider {
+    border-top: 2px solid #e0e0e0;
+    margin: 1rem 0;
+  }
 </style>
 </head>
 <body>
-<h1>⚙️ BẢNG ĐIỀU KHIỂN LED ESP32</h1>
-<div class="card">
-  <label>Chế độ hiển thị</label>
-  <select id="mode">
-    <option value="manual">Thủ công</option>
-    <option value="auto">Tự động (Giá vàng)</option>
-  </select>
+  <div class="container">
+    <h1>⚙️ BẢNG ĐIỀU KHIỂN LED ESP32</h1>
 
-  <label>Nội dung hiển thị</label>
-  <input id="message" type="text" value="XIN CHAO QUY KHACH">
+    <label>Chế độ hiển thị</label>
+    <select id="mode">
+      <option value="manual">Thủ công</option>
+      <option value="auto">Tự động (Giá vàng)</option>
+    </select>
 
-  <label>Loại vàng (chỉ khi auto)</label>
-  <select id="gold">
-    <option value="SJC">SJC</option>
-    <option value="NHAN">Nhẫn tròn</option>
-  </select>
+    <label>Nội dung hiển thị</label>
+    <input id="message" type="text" value="XIN CHAO QUY KHACH" />
 
-  <label>Tốc độ chạy chữ (1–100)</label>
-  <input id="speed" type="range" min="1" max="100" value="50" oninput="speedValue.innerText=this.value">
-  <div>Tốc độ hiện tại: <span id="speedValue">50</span></div>
+    <label>Loại vàng (chỉ khi auto)</label>
+    <select id="gold">
+      <option value="SJC">SJC</option>
+      <option value="NHAN">Nhẫn tròn</option>
+    </select>
 
-  <label>Độ trễ giữa các lần (ms)</label>
-  <input id="delay" type="number" value="3000">
+    <div class="divider"></div>
 
-  <label>Thời gian hiển thị (ms)</label>
-  <input id="duration" type="number" value="10000">
+    <label>Tốc độ chạy chữ: <span id="speedValue">50</span></label>
+    <input id="speed" type="range" min="1" max="100" value="50" oninput="speedValue.innerText=this.value">
 
-  <button onclick="sendData()">💾 Cập nhật LED</button>
-  <div id="status"></div>
-</div>
+    <label>Độ trễ giữa các lần hiển thị (ms)</label>
+    <input id="delay" type="number" value="3000">
 
-<script>
-async function sendData() {
-  const data = {
-    mode: document.getElementById("mode").value,
-    message: document.getElementById("message").value,
-    gold: document.getElementById("gold").value,
-    speed: parseInt(document.getElementById("speed").value),
-    delay: parseInt(document.getElementById("delay").value),
-    duration: parseInt(document.getElementById("duration").value)
-  };
-  try {
-    const res = await fetch("/api/message", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    const json = await res.json();
-    document.getElementById("status").innerText = "✅ Đã gửi lên ESP32!";
-  } catch {
-    document.getElementById("status").innerText = "❌ Lỗi gửi dữ liệu!";
-  }
-}
-</script>
+    <label>Thời gian hiển thị (ms)</label>
+    <input id="duration" type="number" value="10000">
+
+    <button onclick="sendData()">💾 Cập nhật LED</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    async function sendData() {
+      const data = {
+        mode: document.getElementById("mode").value,
+        message: document.getElementById("message").value,
+        gold: document.getElementById("gold").value,
+        speed: parseInt(document.getElementById("speed").value),
+        delay: parseInt(document.getElementById("delay").value),
+        duration: parseInt(document.getElementById("duration").value),
+      };
+
+      try {
+        const res = await fetch("/api/message", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        await res.json();
+        document.getElementById("status").innerText = "✅ Đã gửi dữ liệu lên ESP32!";
+      } catch (err) {
+        document.getElementById("status").innerText = "❌ Gửi thất bại!";
+      }
+    }
+  </script>
 </body>
 </html>
