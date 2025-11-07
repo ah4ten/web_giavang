@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bảng Điều Khiển LED</title>
+<title>Dieu khien LED IoT</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -67,48 +67,75 @@
     padding: 15px;
     border-radius: 10px;
   }
+
+  .status {
+    margin-top: 25px;
+    color: #aaa;
+  }
 </style>
 </head>
 <body>
-<h1>Điều Khiển Màn Hình LED</h1>
+<h1>Bang Dieu Khien LED IoT</h1>
 
 <div class="container">
   <!-- AUTO MODE -->
   <div class="mode" id="autoMode">
-    <h2>Chế độ Tự động</h2>
-    <button id="autoBtn">Bật Auto</button><br>
-    <button class="autoAction" id="sjcBtn" disabled>Vàng Miếng SJC</button>
-    <button class="autoAction" id="nhanBtn" disabled>Vàng Nhẫn</button>
+    <h2>Che do Tu dong</h2>
+    <button id="autoBtn">Bat Auto</button><br>
+    <button class="autoAction" id="sjcBtn" disabled>Vang Mieng SJC</button>
+    <button class="autoAction" id="nhanBtn" disabled>Vang Nhan</button>
   </div>
 
   <!-- MANUAL MODE -->
   <div class="mode" id="manualMode">
-    <h2>Chế độ Thủ công</h2>
-    <button id="manualBtn">Bật Manual</button><br>
-    <input type="text" id="customText" placeholder="Nhập nội dung hiển thị">
-    <button id="sendCustom" disabled>Gửi Nội Dung</button>
+    <h2>Che do Thu cong</h2>
+    <button id="manualBtn">Bat Manual</button><br>
+    <input type="text" id="customText" placeholder="Nhap noi dung hien thi">
+    <button id="sendCustom" disabled>Gui Noi Dung</button>
   </div>
 </div>
 
 <div class="speed-control">
-  <h3>Cài đặt chung</h3>
-  <label>Tốc độ chạy chữ: </label>
+  <h3>Cai dat chung</h3>
+  <label>Toc do chay chu: </label>
   <select id="speedSelect">
-    <option value="20">Chậm</option>
-    <option value="50" selected>Trung bình</option>
+    <option value="20">Cham</option>
+    <option value="50" selected>Trung binh</option>
     <option value="100">Nhanh</option>
+  </select>
+
+  <br><br>
+  <label>Thoi gian cho giua cac lan hien thi (giay): </label>
+  <select id="delaySelect">
+    <option value="2">2s</option>
+    <option value="5" selected>5s</option>
+    <option value="10">10s</option>
+    <option value="15">15s</option>
   </select>
 </div>
 
-<script>
-let currentMode = ""; // auto hoặc manual
+<div class="status" id="status">
+  Trang thai: Dung - Toc do: 50 - Delay: 5s
+</div>
 
-async function sendMessage(type, text, speed) {
+<script>
+let currentMode = "";
+let currentSpeed = 50;
+let currentDelay = 5;
+
+async function sendMessage(type, text) {
   await fetch("/api/message", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: { type, text, speed } })
+    body: JSON.stringify({
+      message: { type, text, speed: currentSpeed, delayTime: currentDelay }
+    })
   });
+}
+
+function updateStatus(text) {
+  document.getElementById("status").innerText =
+    `Trang thai: ${text} - Toc do: ${currentSpeed} - Delay: ${currentDelay}s`;
 }
 
 document.getElementById("autoBtn").onclick = () => {
@@ -117,7 +144,7 @@ document.getElementById("autoBtn").onclick = () => {
   document.getElementById("sendCustom").disabled = true;
   document.getElementById("manualBtn").disabled = false;
   document.getElementById("autoBtn").disabled = true;
-  alert("Đã chuyển sang chế độ tự động");
+  updateStatus("Auto");
 };
 
 document.getElementById("manualBtn").onclick = () => {
@@ -126,25 +153,27 @@ document.getElementById("manualBtn").onclick = () => {
   document.getElementById("sendCustom").disabled = false;
   document.getElementById("manualBtn").disabled = true;
   document.getElementById("autoBtn").disabled = false;
-  alert("Đã chuyển sang chế độ thủ công");
+  updateStatus("Manual");
 };
 
-document.getElementById("sjcBtn").onclick = () => {
-  const speed = document.getElementById("speedSelect").value;
-  sendMessage("gold", "SJC", speed);
+document.getElementById("speedSelect").onchange = (e) => {
+  currentSpeed = parseInt(e.target.value);
+  updateStatus(currentMode || "Dung");
+  sendMessage(currentMode === "manual" ? "custom" : "gold", "CAP NHAT TOC DO");
 };
 
-document.getElementById("nhanBtn").onclick = () => {
-  const speed = document.getElementById("speedSelect").value;
-  sendMessage("gold", "NHAN", speed);
+document.getElementById("delaySelect").onchange = (e) => {
+  currentDelay = parseInt(e.target.value);
+  updateStatus(currentMode || "Dung");
+  sendMessage(currentMode === "manual" ? "custom" : "gold", "CAP NHAT DELAY");
 };
+
+document.getElementById("sjcBtn").onclick = () => sendMessage("gold", "SJC");
+document.getElementById("nhanBtn").onclick = () => sendMessage("gold", "NHAN");
 
 document.getElementById("sendCustom").onclick = () => {
-  const text = document.getElementById("customText").value;
-  const speed = document.getElementById("speedSelect").value;
-  if (text.trim() !== "") {
-    sendMessage("custom", text, speed);
-  }
+  const text = document.getElementById("customText").value.trim();
+  if (text !== "") sendMessage("custom", text);
 };
 </script>
 </body>
