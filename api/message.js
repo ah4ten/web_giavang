@@ -1,12 +1,21 @@
-let currentMessage = { type: "custom", text: "Khoi dong he thong", speed: 50, delayTime: 5 };
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "POST") {
-    currentMessage = req.body.message;
-    return res.status(200).json({ success: true, message: currentMessage });
+    const data = req.body;
+    console.log("Dữ liệu nhận:", data);
+
+    // Ví dụ gửi dữ liệu sang ESP32 qua IP cục bộ
+    try {
+      await fetch("http://192.168.1.xxx/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    } catch (e) {
+      console.error("Không gửi được đến ESP32:", e);
+    }
+
+    res.status(200).json({ status: "OK", received: data });
+  } else {
+    res.status(405).end();
   }
-  if (req.method === "GET") {
-    return res.status(200).json({ message: currentMessage });
-  }
-  res.status(405).end();
 }
