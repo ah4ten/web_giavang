@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Điều khiển LED ESP32</title>
+<style>
+body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+input, button { padding: 10px; font-size: 16px; }
+</style>
+</head>
+<body>
+<h2>Nhập nội dung hiển thị</h2>
+<input id="msg" placeholder="Nhập nội dung..." size="40">
+<button onclick="send()">Gửi</button>
+
+<script>
+async function send() {
+  const text = document.getElementById('msg').value;
+  await fetch('/api/message', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text})
+  });
+  alert('Đã gửi!');
+}
+</script>
+</body>
+</html>
