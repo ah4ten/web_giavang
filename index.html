@@ -1,121 +1,107 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Điều khiển LED ma trận</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f4f7fc;
-      color: #222;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-    h1 {
-      color: #0066cc;
-    }
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      margin: 15px 0;
-    }
-    button {
-      flex: 1;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      background: #ddd;
-    }
-    button.active {
-      background: #007bff;
-      color: white;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-      width: 320px;
-      margin-top: 15px;
-    }
-    input, select {
-      width: 100%;
-      margin: 5px 0 10px;
-      padding: 8px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bảng Điều Khiển LED</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0e0e0e;
+    color: white;
+    text-align: center;
+    margin: 0; padding: 30px;
+  }
+  h2 { color: #00ff7f; }
+  .card {
+    background: #1c1c1c;
+    padding: 20px;
+    margin: 10px auto;
+    border-radius: 12px;
+    width: 360px;
+    box-shadow: 0 0 10px #222;
+  }
+  input, select {
+    width: 90%;
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 8px;
+    border: none;
+    background: #222;
+    color: white;
+  }
+  button {
+    background: #00ff7f;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 8px;
+  }
+  button:hover { background: #03c06b; }
+  #status {
+    color: #00ffff;
+    margin-top: 10px;
+  }
+</style>
 </head>
 <body>
-  <h1>Điều khiển LED MAX7219</h1>
 
-  <div class="card">
-    <h2>Chọn chế độ</h2>
-    <div class="btn-group">
-      <button id="manualBtn" onclick="setMode('manual')">Thủ công</button>
-      <button id="autoBtn" onclick="setMode('auto')">Tự động</button>
-    </div>
+<h2>⚙️ BẢNG ĐIỀU KHIỂN LED ESP32</h2>
 
-    <div id="manualArea">
-      <label>Nội dung hiển thị:</label>
-      <input id="textInput" type="text" placeholder="Nhập chữ..." />
-      <button onclick="sendUpdate()">Cập nhật lên LED</button>
-    </div>
+<div class="card">
+  <label>Chế độ hiển thị:</label>
+  <select id="mode">
+    <option value="manual">Thủ công</option>
+    <option value="auto">Tự động (Giá vàng)</option>
+  </select>
 
-    <div id="autoArea" style="opacity:0.5;pointer-events:none;">
-      <label>Loại vàng:</label>
-      <div class="btn-group">
-        <button id="sjcBtn" onclick="setGold('SJC')">SJC</button>
-        <button id="nhanBtn" onclick="setGold('NHAN')">Nhẫn trơn</button>
-      </div>
-    </div>
+  <label>Nội dung hiển thị:</label>
+  <input id="message" type="text" value="XIN CHAO QUY KHACH">
 
-    <hr />
-    <h2>Cài đặt chung</h2>
-    <label>Tốc độ chạy (1-100):</label>
-    <input type="range" min="1" max="100" id="speedRange" value="50" oninput="sendUpdate()" />
-    <label>Thời gian delay (ms):</label>
-    <input type="number" id="delayInput" value="3000" oninput="sendUpdate()" />
-  </div>
+  <label>Loại vàng (chỉ khi auto):</label>
+  <select id="gold">
+    <option value="SJC">SJC</option>
+    <option value="NHAN">Nhẫn tròn</option>
+  </select>
 
-  <script>
-    let mode = "manual";
-    let gold = "SJC";
+  <label>Tốc độ (1–100):</label>
+  <input id="speed" type="number" value="50" min="1" max="100">
 
-    async function sendUpdate() {
-      const message = document.getElementById("textInput").value;
-      const speed = document.getElementById("speedRange").value;
-      const delay = document.getElementById("delayInput").value;
-      await fetch("/api/message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, message, gold, speed, delay })
-      });
-    }
+  <label>Delay giữa 2 vòng (ms):</label>
+  <input id="delay" type="number" value="3000">
 
-    function setMode(m) {
-      mode = m;
-      document.getElementById("manualArea").style.opacity = m === "manual" ? 1 : 0.5;
-      document.getElementById("manualArea").style.pointerEvents = m === "manual" ? "auto" : "none";
-      document.getElementById("autoArea").style.opacity = m === "auto" ? 1 : 0.5;
-      document.getElementById("autoArea").style.pointerEvents = m === "auto" ? "auto" : "none";
-      document.getElementById("manualBtn").classList.toggle("active", m === "manual");
-      document.getElementById("autoBtn").classList.toggle("active", m === "auto");
-      sendUpdate();
-    }
+  <label>Thời gian hiển thị (ms):</label>
+  <input id="duration" type="number" value="10000">
 
-    function setGold(g) {
-      gold = g;
-      document.getElementById("sjcBtn").classList.toggle("active", g === "SJC");
-      document.getElementById("nhanBtn").classList.toggle("active", g === "NHAN");
-      sendUpdate();
-    }
-  </script>
+  <button onclick="sendData()">💾 Cập nhật</button>
+  <div id="status"></div>
+</div>
+
+<script>
+async function sendData() {
+  const data = {
+    mode: document.getElementById("mode").value,
+    message: document.getElementById("message").value,
+    gold: document.getElementById("gold").value,
+    speed: parseInt(document.getElementById("speed").value),
+    delay: parseInt(document.getElementById("delay").value),
+    duration: parseInt(document.getElementById("duration").value)
+  };
+
+  try {
+    const res = await fetch("/api/message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    document.getElementById("status").innerText = "✅ Đã gửi thành công!";
+  } catch (err) {
+    document.getElementById("status").innerText = "❌ Lỗi gửi dữ liệu!";
+  }
+}
+</script>
 </body>
 </html>
