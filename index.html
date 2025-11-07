@@ -1,111 +1,213 @@
-import { useState } from "react";
-import axios from "axios";
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Điều khiển LED hiển thị</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f9fafb;
+        color: #222;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+      h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+      }
+      .mode-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+      }
+      button {
+        border: none;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      button:hover {
+        opacity: 0.8;
+      }
+      .active-manual {
+        background: #3b82f6;
+        color: white;
+      }
+      .active-auto {
+        background: #22c55e;
+        color: white;
+      }
+      .inactive {
+        background: #e5e7eb;
+        color: #555;
+      }
+      .section {
+        width: 100%;
+        max-width: 500px;
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      .disabled {
+        opacity: 0.4;
+        pointer-events: none;
+      }
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+      }
+      input[type="range"] {
+        width: 100%;
+      }
+      .gold-buttons {
+        display: flex;
+        gap: 10px;
+      }
+      .gold-buttons button {
+        flex: 1;
+      }
+      .gold-active {
+        background: #facc15;
+        color: black;
+      }
+    </style>
+  </head>
 
-export default function App() {
-  const [mode, setMode] = useState("manual");
-  const [text, setText] = useState("");
-  const [speed, setSpeed] = useState(50);
-  const [delay, setDelay] = useState(3000);
-  const [goldType, setGoldType] = useState("SJC");
+  <body>
+    <h1>Điều khiển LED hiển thị</h1>
 
-  const sendUpdate = async (data) => {
-    await axios.post("/api/message", data);
-  };
+    <!-- CHỌN CHẾ ĐỘ -->
+    <div class="mode-buttons">
+      <button id="btnManual" class="active-manual">Chế độ thủ công</button>
+      <button id="btnAuto" class="inactive">Chế độ tự động</button>
+    </div>
 
-  const handleMode = (m) => {
-    setMode(m);
-    sendUpdate({ mode: m, message: text, gold: goldType, speed, delay });
-  };
+    <!-- THỦ CÔNG -->
+    <div id="manualSection" class="section">
+      <h2>Chế độ thủ công</h2>
+      <input
+        id="manualText"
+        type="text"
+        placeholder="Nhập nội dung hiển thị..."
+      />
+      <button id="btnSendManual" class="active-manual">Cập nhật lên LED</button>
+    </div>
 
-  const handleSend = () => {
-    sendUpdate({ mode, message: text, gold: goldType, speed, delay });
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-gray-800 p-6">
-      <h1 className="text-3xl font-bold mb-6">Dieu khien hien thi LED</h1>
-
-      {/* CHON CHE DO */}
-      <div className="flex gap-4 mb-6">
-        <button
-          onClick={() => handleMode("manual")}
-          className={`px-6 py-3 rounded-xl text-lg font-semibold ${
-            mode === "manual" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          Che do Thu cong
-        </button>
-        <button
-          onClick={() => handleMode("auto")}
-          className={`px-6 py-3 rounded-xl text-lg font-semibold ${
-            mode === "auto" ? "bg-green-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          Che do Tu dong
-        </button>
-      </div>
-
-      {/* MANUAL MODE */}
-      <div className={`${mode !== "manual" && "opacity-40 pointer-events-none"} w-full max-w-lg mb-8`}>
-        <h2 className="font-semibold mb-2 text-xl">Noi dung hien thi</h2>
-        <textarea
-          className="w-full p-3 border rounded-xl"
-          rows="3"
-          placeholder="Nhap chuoi hien thi..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-        <button
-          onClick={handleSend}
-          className="w-full mt-3 py-3 bg-blue-500 text-white rounded-xl font-semibold"
-        >
-          Cap nhat len LED
-        </button>
-      </div>
-
-      {/* AUTO MODE */}
-      <div className={`${mode !== "auto" && "opacity-40 pointer-events-none"} w-full max-w-lg`}>
-        <h2 className="font-semibold mb-2 text-xl">Loai vang</h2>
-        <div className="flex gap-4 mb-3">
-          <button
-            onClick={() => { setGoldType("SJC"); handleSend(); }}
-            className={`flex-1 py-3 rounded-xl font-semibold ${
-              goldType === "SJC" ? "bg-yellow-400" : "bg-gray-200"
-            }`}
-          >
-            SJC
-          </button>
-          <button
-            onClick={() => { setGoldType("NHAN"); handleSend(); }}
-            className={`flex-1 py-3 rounded-xl font-semibold ${
-              goldType === "NHAN" ? "bg-yellow-400" : "bg-gray-200"
-            }`}
-          >
-            Nhan Tron
-          </button>
-        </div>
-      </div>
-
-      {/* CAI DAT CHUNG */}
-      <div className="w-full max-w-lg mt-8 border-t pt-6">
-        <h2 className="font-semibold mb-3 text-xl">Cai dat chung</h2>
-        <label className="block mb-2">Toc do chay chu: {speed}</label>
-        <input
-          type="range"
-          min="1"
-          max="100"
-          value={speed}
-          onChange={(e) => { setSpeed(e.target.value); handleSend(); }}
-          className="w-full mb-4"
-        />
-        <label className="block mb-2">Thoi gian delay (ms): {delay}</label>
-        <input
-          type="number"
-          value={delay}
-          onChange={(e) => { setDelay(e.target.value); handleSend(); }}
-          className="w-full border rounded-xl p-2"
-        />
+    <!-- TỰ ĐỘNG -->
+    <div id="autoSection" class="section disabled">
+      <h2>Chế độ tự động</h2>
+      <div class="gold-buttons">
+        <button id="btnSJC" class="gold-active">Vàng Miếng SJC</button>
+        <button id="btnNHAN" class="inactive">Nhẫn Tròn</button>
       </div>
     </div>
-  );
-}
+
+    <!-- CÀI ĐẶT CHUNG -->
+    <div class="section">
+      <h2>Cài đặt chung</h2>
+      <label for="speedRange">Tốc độ chạy chữ: <span id="speedVal">50</span></label>
+      <input type="range" id="speedRange" min="1" max="100" value="50" />
+
+      <label for="delayInput">Thời gian delay (ms):</label>
+      <input type="number" id="delayInput" value="3000" min="100" />
+    </div>
+
+    <script>
+      let mode = "manual";
+      let goldType = "SJC";
+      let text = "";
+      let speed = 50;
+      let delay = 3000;
+
+      const btnManual = document.getElementById("btnManual");
+      const btnAuto = document.getElementById("btnAuto");
+      const manualSection = document.getElementById("manualSection");
+      const autoSection = document.getElementById("autoSection");
+      const manualText = document.getElementById("manualText");
+      const btnSendManual = document.getElementById("btnSendManual");
+      const btnSJC = document.getElementById("btnSJC");
+      const btnNHAN = document.getElementById("btnNHAN");
+      const speedRange = document.getElementById("speedRange");
+      const delayInput = document.getElementById("delayInput");
+      const speedVal = document.getElementById("speedVal");
+
+      function sendUpdate() {
+        const data = {
+          mode,
+          message: manualText.value || "",
+          gold: goldType,
+          speed,
+          delay,
+        };
+        fetch("/api/message", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        console.log("Đã gửi:", data);
+      }
+
+      // Chuyển chế độ
+      btnManual.onclick = () => {
+        mode = "manual";
+        btnManual.classList.add("active-manual");
+        btnAuto.classList.remove("active-auto");
+        btnAuto.classList.add("inactive");
+        manualSection.classList.remove("disabled");
+        autoSection.classList.add("disabled");
+        sendUpdate();
+      };
+
+      btnAuto.onclick = () => {
+        mode = "auto";
+        btnAuto.classList.add("active-auto");
+        btnManual.classList.remove("active-manual");
+        btnManual.classList.add("inactive");
+        autoSection.classList.remove("disabled");
+        manualSection.classList.add("disabled");
+        sendUpdate();
+      };
+
+      // Manual send
+      btnSendManual.onclick = () => sendUpdate();
+
+      // Auto chọn loại vàng
+      btnSJC.onclick = () => {
+        goldType = "SJC";
+        btnSJC.classList.add("gold-active");
+        btnNHAN.classList.remove("gold-active");
+        sendUpdate();
+      };
+      btnNHAN.onclick = () => {
+        goldType = "NHAN";
+        btnNHAN.classList.add("gold-active");
+        btnSJC.classList.remove("gold-active");
+        sendUpdate();
+      };
+
+      // Speed & Delay thay đổi → cập nhật ngay
+      speedRange.oninput = (e) => {
+        speed = parseInt(e.target.value);
+        speedVal.textContent = speed;
+        sendUpdate();
+      };
+      delayInput.oninput = (e) => {
+        delay = parseInt(e.target.value);
+        sendUpdate();
+      };
+    </script>
+  </body>
+</html>
