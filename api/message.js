@@ -1,11 +1,10 @@
-let latest = "Xin chào từ web Vercel!";
+let latest = { type: "gold", text: "VANG MIENG SJC" };
 
-export default function handler(req, res) {
-  if (req.method === 'POST') {
-    const { text } = req.body;
-    latest = text || latest;
-    res.status(200).json({ status: "ok", message: latest });
-  } else {
-    res.status(200).json({ message: latest });
+export default async function handler(req, res) {
+  if (req.method === "POST") {
+    const body = await req.json();
+    latest = { type: body.type || "custom", text: body.text || latest.text };
+    return res.json({ status: "ok", message: latest });
   }
+  res.json({ message: latest });
 }

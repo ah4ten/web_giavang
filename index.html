@@ -2,27 +2,114 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Điều khiển LED ESP32</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dieu khien hien thi LED</title>
 <style>
-body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-input, button { padding: 10px; font-size: 16px; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+  }
+
+  h2 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  /* Nhom nut chon vang */
+  .button-group {
+    display: grid;
+    grid-template-columns: repeat(2, 180px);
+    gap: 15px;
+    margin-bottom: 40px;
+  }
+
+  button {
+    padding: 15px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #0078d7;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background-color: #005fa3;
+  }
+
+  /* Khu vuc nhap chu */
+  .textbox-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    padding: 25px 40px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  input[type="text"] {
+    width: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .send-btn {
+    background-color: #28a745;
+  }
+
+  .send-btn:hover {
+    background-color: #1f8a39;
+  }
 </style>
 </head>
 <body>
-<h2>Nhập nội dung hiển thị</h2>
-<input id="msg" placeholder="Nhập nội dung..." size="40">
-<button onclick="send()">Gửi</button>
+
+<h2>💰 Chon loai vang hien thi</h2>
+
+<div class="button-group">
+  <button onclick="send('VANG MIENG SJC')">Vang mieng SJC</button>
+  <button onclick="send('NHAN TRON TRON')">Nhan tron tron</button>
+  <button onclick="send('VANG RONG THANG LONG')">Vang Rong Thang Long</button>
+  <button onclick="send('TRANG SUC BTMC')">Trang suc BTMC</button>
+</div>
+
+<div class="textbox-area">
+  <h3>📝 Nhap noi dung tuy chinh</h3>
+  <input type="text" id="customText" placeholder="Nhap dong chu muon hien thi..." />
+  <button class="send-btn" onclick="sendCustom()">Gui noi dung</button>
+</div>
 
 <script>
-async function send() {
-  const text = document.getElementById('msg').value;
+async function send(goldName) {
   await fetch('/api/message', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({text})
+    body: JSON.stringify({ type: 'gold', text: goldName })
   });
-  alert('Đã gửi!');
+  alert('✅ Da gui yeu cau hien thi: ' + goldName);
+}
+
+async function sendCustom() {
+  const text = document.getElementById('customText').value.trim();
+  if (!text) return alert('Vui long nhap noi dung!');
+  await fetch('/api/message', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ type: 'custom', text })
+  });
+  alert('✅ Da gui noi dung: ' + text);
+  document.getElementById('customText').value = '';
 }
 </script>
+
 </body>
 </html>
