@@ -1,115 +1,70 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BÀI TẬP LỚN IOT</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bang Dieu Khien LED</title>
 <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f4f6f8;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 40px;
-  }
-
-  h2 {
-    color: #333;
-    margin-bottom: 20px;
-  }
-
-  /* Nhom nut chon vang */
-  .button-group {
-    display: grid;
-    grid-template-columns: repeat(2, 180px);
-    gap: 15px;
-    margin-bottom: 40px;
-  }
-
-  button {
-    padding: 15px 20px;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    background-color: #0078d7;
-    color: white;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  button:hover {
-    background-color: #005fa3;
-  }
-
-  /* Khu vuc nhap chu */
-  .textbox-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: white;
-    padding: 25px 40px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-
-  input[type="text"] {
-    width: 300px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-
-  .send-btn {
-    background-color: #28a745;
-  }
-
-  .send-btn:hover {
-    background-color: #1f8a39;
-  }
+  body { font-family: Arial; text-align: center; background: #f5f5f5; }
+  .container { margin: 20px auto; width: 90%; max-width: 500px; }
+  .buttons button { width: 48%; height: 50px; margin: 5px 1%; font-size: 16px; }
+  .mode button { width: 48%; margin: 10px 1%; padding: 10px; }
+  textarea { width: 100%; height: 80px; margin-top: 10px; font-size: 16px; }
 </style>
 </head>
 <body>
+<div class="container">
+  <h2>Dieu khien LED hien thi</h2>
 
-<h2>💰 CHỌN GIÁ VÀNG HIỂN THỊ</h2>
+  <div class="mode">
+    <button onclick="setMode('manual')">Che do thu cong</button>
+    <button onclick="setMode('auto')">Che do tu dong</button>
+  </div>
 
-<div class="button-group">
-  <button onclick="send('VANG MIENG SJC')">Vàng miếng SJC</button>
-  <button onclick="send('NHAN TRON TRON')">Nhẫn trơn tròn</button>
-  <button onclick="send('VANG RONG THANG LONG')">Vàng ròng Thăng Long</button>
-  <button onclick="send('TRANG SUC BTMC')">Trang sức BTMC</button>
-</div>
+  <div id="manual-controls">
+    <textarea id="inputText" placeholder="Nhap noi dung hien thi..."></textarea><br>
+    <button onclick="sendText()">Gui noi dung</button>
 
-<div class="textbox-area">
-  <h3>📝 NHẬP NỘI DUNG TUỲ CHỈNH</h3>
-  <input type="text" id="customText" placeholder="Nhập dòng chữ muốn hiển thị..." />
-  <button class="send-btn" onclick="sendCustom()">Gửi nội dung</button>
+    <div class="buttons">
+      <button onclick="sendGold('VANG MIENG SJC')">Vang mieng SJC</button>
+      <button onclick="sendGold('NHAN SJC 9999')">Nhan SJC</button>
+      <button onclick="sendGold('NHA NUOC DOJI')">Doji</button>
+      <button onclick="sendGold('PNJ 9999')">PNJ</button>
+    </div>
+  </div>
+
+  <p id="status"></p>
 </div>
 
 <script>
-async function send(goldName) {
-  await fetch('/api/message', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ type: 'gold', text: goldName })
+async function setMode(mode) {
+  await fetch("/api/message", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode })
   });
-  alert('✅ Da gui yeu cau hien thi: ' + goldName);
+  document.getElementById("status").innerText = "Da chuyen sang che do: " + mode;
+  document.getElementById("manual-controls").style.display = (mode === "manual") ? "block" : "none";
 }
 
-async function sendCustom() {
-  const text = document.getElementById('customText').value.trim();
-  if (!text) return alert('Vui long nhap noi dung!');
-  await fetch('/api/message', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ type: 'custom', text })
+async function sendText() {
+  const text = document.getElementById("inputText").value;
+  await fetch("/api/message", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: { type: "custom", text } })
   });
-  alert('✅ Da gui noi dung: ' + text);
-  document.getElementById('customText').value = '';
+  document.getElementById("status").innerText = "Da gui noi dung thu cong";
+}
+
+async function sendGold(name) {
+  await fetch("/api/message", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: { type: "gold", text: name } })
+  });
+  document.getElementById("status").innerText = "Da gui thong tin: " + name;
 }
 </script>
-
 </body>
 </html>
