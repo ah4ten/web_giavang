@@ -1,10 +1,28 @@
-let latest = { type: "gold", text: "VANG MIENG SJC" };
+// =======================
+// api/message.js
+// =======================
 
-export default async function handler(req, res) {
+// Dùng biến toàn cục Vercel Edge Function có thể cache trong vài phút
+let cache = { type: "gold", text: "VANG MIENG SJC" };
+
+export const config = {
+  runtime: "edge",
+};
+
+export default async function handler(req) {
   if (req.method === "POST") {
     const body = await req.json();
-    latest = { type: body.type || "custom", text: body.text || latest.text };
-    return res.json({ status: "ok", message: latest });
+    cache = {
+      type: body.type || "custom",
+      text: body.text || cache.text,
+      time: new Date().toISOString(),
+    };
+    return new Response(JSON.stringify({ status: "ok", message: cache }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
-  res.json({ message: latest });
+
+  return new Response(JSON.stringify({ message: cache }), {
+    headers: { "Content-Type": "application/json" },
+  });
 }
