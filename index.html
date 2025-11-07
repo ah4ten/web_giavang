@@ -1,213 +1,121 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Điều khiển LED hiển thị</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f9fafb;
-        color: #222;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-      }
-      h1 {
-        font-size: 28px;
-        margin-bottom: 20px;
-      }
-      .mode-buttons {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 25px;
-      }
-      button {
-        border: none;
-        padding: 12px 20px;
-        border-radius: 12px;
-        font-weight: bold;
-        font-size: 16px;
-        cursor: pointer;
-        transition: 0.3s;
-      }
-      button:hover {
-        opacity: 0.8;
-      }
-      .active-manual {
-        background: #3b82f6;
-        color: white;
-      }
-      .active-auto {
-        background: #22c55e;
-        color: white;
-      }
-      .inactive {
-        background: #e5e7eb;
-        color: #555;
-      }
-      .section {
-        width: 100%;
-        max-width: 500px;
-        background: white;
-        padding: 20px;
-        border-radius: 16px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-      }
-      .disabled {
-        opacity: 0.4;
-        pointer-events: none;
-      }
-      input[type="text"],
-      input[type="number"] {
-        width: 100%;
-        padding: 10px;
-        font-size: 16px;
-        border-radius: 10px;
-        border: 1px solid #ccc;
-        margin-bottom: 10px;
-      }
-      input[type="range"] {
-        width: 100%;
-      }
-      .gold-buttons {
-        display: flex;
-        gap: 10px;
-      }
-      .gold-buttons button {
-        flex: 1;
-      }
-      .gold-active {
-        background: #facc15;
-        color: black;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Điều khiển LED ma trận</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f7fc;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #0066cc;
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    button {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      background: #ddd;
+    }
+    button.active {
+      background: #007bff;
+      color: white;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 320px;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      margin: 5px 0 10px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Điều khiển LED MAX7219</h1>
 
-  <body>
-    <h1>Điều khiển LED hiển thị</h1>
-
-    <!-- CHỌN CHẾ ĐỘ -->
-    <div class="mode-buttons">
-      <button id="btnManual" class="active-manual">Chế độ thủ công</button>
-      <button id="btnAuto" class="inactive">Chế độ tự động</button>
+  <div class="card">
+    <h2>Chọn chế độ</h2>
+    <div class="btn-group">
+      <button id="manualBtn" onclick="setMode('manual')">Thủ công</button>
+      <button id="autoBtn" onclick="setMode('auto')">Tự động</button>
     </div>
 
-    <!-- THỦ CÔNG -->
-    <div id="manualSection" class="section">
-      <h2>Chế độ thủ công</h2>
-      <input
-        id="manualText"
-        type="text"
-        placeholder="Nhập nội dung hiển thị..."
-      />
-      <button id="btnSendManual" class="active-manual">Cập nhật lên LED</button>
+    <div id="manualArea">
+      <label>Nội dung hiển thị:</label>
+      <input id="textInput" type="text" placeholder="Nhập chữ..." />
+      <button onclick="sendUpdate()">Cập nhật lên LED</button>
     </div>
 
-    <!-- TỰ ĐỘNG -->
-    <div id="autoSection" class="section disabled">
-      <h2>Chế độ tự động</h2>
-      <div class="gold-buttons">
-        <button id="btnSJC" class="gold-active">Vàng Miếng SJC</button>
-        <button id="btnNHAN" class="inactive">Nhẫn Tròn</button>
+    <div id="autoArea" style="opacity:0.5;pointer-events:none;">
+      <label>Loại vàng:</label>
+      <div class="btn-group">
+        <button id="sjcBtn" onclick="setGold('SJC')">SJC</button>
+        <button id="nhanBtn" onclick="setGold('NHAN')">Nhẫn trơn</button>
       </div>
     </div>
 
-    <!-- CÀI ĐẶT CHUNG -->
-    <div class="section">
-      <h2>Cài đặt chung</h2>
-      <label for="speedRange">Tốc độ chạy chữ: <span id="speedVal">50</span></label>
-      <input type="range" id="speedRange" min="1" max="100" value="50" />
+    <hr />
+    <h2>Cài đặt chung</h2>
+    <label>Tốc độ chạy (1-100):</label>
+    <input type="range" min="1" max="100" id="speedRange" value="50" oninput="sendUpdate()" />
+    <label>Thời gian delay (ms):</label>
+    <input type="number" id="delayInput" value="3000" oninput="sendUpdate()" />
+  </div>
 
-      <label for="delayInput">Thời gian delay (ms):</label>
-      <input type="number" id="delayInput" value="3000" min="100" />
-    </div>
+  <script>
+    let mode = "manual";
+    let gold = "SJC";
 
-    <script>
-      let mode = "manual";
-      let goldType = "SJC";
-      let text = "";
-      let speed = 50;
-      let delay = 3000;
+    async function sendUpdate() {
+      const message = document.getElementById("textInput").value;
+      const speed = document.getElementById("speedRange").value;
+      const delay = document.getElementById("delayInput").value;
+      await fetch("/api/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, message, gold, speed, delay })
+      });
+    }
 
-      const btnManual = document.getElementById("btnManual");
-      const btnAuto = document.getElementById("btnAuto");
-      const manualSection = document.getElementById("manualSection");
-      const autoSection = document.getElementById("autoSection");
-      const manualText = document.getElementById("manualText");
-      const btnSendManual = document.getElementById("btnSendManual");
-      const btnSJC = document.getElementById("btnSJC");
-      const btnNHAN = document.getElementById("btnNHAN");
-      const speedRange = document.getElementById("speedRange");
-      const delayInput = document.getElementById("delayInput");
-      const speedVal = document.getElementById("speedVal");
+    function setMode(m) {
+      mode = m;
+      document.getElementById("manualArea").style.opacity = m === "manual" ? 1 : 0.5;
+      document.getElementById("manualArea").style.pointerEvents = m === "manual" ? "auto" : "none";
+      document.getElementById("autoArea").style.opacity = m === "auto" ? 1 : 0.5;
+      document.getElementById("autoArea").style.pointerEvents = m === "auto" ? "auto" : "none";
+      document.getElementById("manualBtn").classList.toggle("active", m === "manual");
+      document.getElementById("autoBtn").classList.toggle("active", m === "auto");
+      sendUpdate();
+    }
 
-      function sendUpdate() {
-        const data = {
-          mode,
-          message: manualText.value || "",
-          gold: goldType,
-          speed,
-          delay,
-        };
-        fetch("/api/message", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        console.log("Đã gửi:", data);
-      }
-
-      // Chuyển chế độ
-      btnManual.onclick = () => {
-        mode = "manual";
-        btnManual.classList.add("active-manual");
-        btnAuto.classList.remove("active-auto");
-        btnAuto.classList.add("inactive");
-        manualSection.classList.remove("disabled");
-        autoSection.classList.add("disabled");
-        sendUpdate();
-      };
-
-      btnAuto.onclick = () => {
-        mode = "auto";
-        btnAuto.classList.add("active-auto");
-        btnManual.classList.remove("active-manual");
-        btnManual.classList.add("inactive");
-        autoSection.classList.remove("disabled");
-        manualSection.classList.add("disabled");
-        sendUpdate();
-      };
-
-      // Manual send
-      btnSendManual.onclick = () => sendUpdate();
-
-      // Auto chọn loại vàng
-      btnSJC.onclick = () => {
-        goldType = "SJC";
-        btnSJC.classList.add("gold-active");
-        btnNHAN.classList.remove("gold-active");
-        sendUpdate();
-      };
-      btnNHAN.onclick = () => {
-        goldType = "NHAN";
-        btnNHAN.classList.add("gold-active");
-        btnSJC.classList.remove("gold-active");
-        sendUpdate();
-      };
-
-      // Speed & Delay thay đổi → cập nhật ngay
-      speedRange.oninput = (e) => {
-        speed = parseInt(e.target.value);
-        speedVal.textContent = speed;
-        sendUpdate();
-      };
-      delayInput.oninput = (e) => {
-        delay = parseInt(e.target.value);
-        sendUpdate();
-      };
-    </script>
-  </body>
+    function setGold(g) {
+      gold = g;
+      document.getElementById("sjcBtn").classList.toggle("active", g === "SJC");
+      document.getElementById("nhanBtn").classList.toggle("active", g === "NHAN");
+      sendUpdate();
+    }
+  </script>
+</body>
 </html>
