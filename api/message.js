@@ -19,7 +19,7 @@ async function connectDB() {
     client = new MongoClient(uri);
     await client.connect();
   }
-  db = client.db('esp32_logs'); // tên database tùy chọn
+  db = client.db('esp32_logs'); // bạn có thể đổi tên DB nếu muốn
   return db;
 }
 
@@ -36,20 +36,21 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    // ⚙️ Gửi cấu hình hiện tại cho ESP32
+    // ⚙️ Gửi cấu hình cho ESP32
     res.status(200).json(state);
 
-    // ⚡ Ghi log vào MongoDB (chạy không chặn)
+    // ⚡ Ghi log vào MongoDB (không ảnh hưởng đến phản hồi)
     try {
       const db = await connectDB();
       const logs = db.collection('esp32_message_logs');
       await logs.insertOne({
         ...state,
         time: new Date(),
-        source: 'ESP32' // để biết log đến từ ESP32
+        source: 'ESP32'
       });
+      console.log('✅ Log ESP32 saved to MongoDB');
     } catch (err) {
-      console.error('Lỗi ghi log MongoDB:', err);
+      console.error('❌ MongoDB log error:', err);
     }
 
     return;
