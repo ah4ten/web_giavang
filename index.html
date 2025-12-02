@@ -59,6 +59,7 @@
     font-size: clamp(0.9rem, 1.5vw, 1rem);
     cursor: pointer;
     transition: all 0.2s;
+    margin-top: 10px;
   }
 
   button:hover {
@@ -111,12 +112,14 @@
       </select>
 
       <label>Tốc độ chạy chữ: <span id="speedValueAuto">50</span></label>
-      <input id="speedAuto" type="range" min="1" max="100" value="50" oninput="speedValueAuto.innerText=this.value">
+      <input id="speedAuto" type="range" min="1" max="100" value="50"
+        oninput="speedValueAuto.innerText=this.value">
 
       <label>Độ trễ giữa 2 lần hiển thị (ms)</label>
       <input id="delayAuto" type="number" value="3000">
 
       <button onclick="sendData('auto')">🚀 Cập nhật Auto</button>
+      <button onclick="readDHT()">🌡️ Đọc nhiệt độ / độ ẩm</button>
     </fieldset>
 
     <!-- MANUAL MODE -->
@@ -127,12 +130,14 @@
       <input id="message" type="text" value="XIN CHAO QUY KHACH" />
 
       <label>Tốc độ chạy chữ: <span id="speedValueManu">50</span></label>
-      <input id="speedManu" type="range" min="1" max="100" value="50" oninput="speedValueManu.innerText=this.value">
+      <input id="speedManu" type="range" min="1" max="100" value="50"
+        oninput="speedValueManu.innerText=this.value">
 
       <label>Độ trễ giữa 2 lần hiển thị (ms)</label>
       <input id="delayManu" type="number" value="3000">
 
       <button onclick="sendData('manual')">💾 Cập nhật Thủ công</button>
+      <button onclick="readDHT()">🌡️ Đọc nhiệt độ / độ ẩm</button>
     </fieldset>
 
     <div id="status"></div>
@@ -169,9 +174,28 @@
           body: JSON.stringify(data)
         });
         await res.json();
-        document.getElementById("status").innerText = "✅ Đã cập nhật " + (type === "auto" ? "Auto" : "Thủ công") + "!";
+        document.getElementById("status").innerText =
+          "✅ Đã cập nhật " + (type === "auto" ? "Auto" : "Thủ công") + "!";
       } catch {
         document.getElementById("status").innerText = "❌ Gửi thất bại!";
+      }
+    }
+
+    async function readDHT() {
+      try {
+        // ✔ Lấy dữ liệu đang lưu trong server
+        const res = await fetch("/api/message?dht=1");
+        const data = await res.json();
+
+        document.getElementById("status").innerText =
+          `🌡️ Nhiệt độ: ${data.temp ?? "-"} °C — 💧 Độ ẩm: ${data.humi ?? "-"} %`;
+
+        // ✔ Gọi ESP32 để ra lệnh đọc lại cảm biến từ UNO
+        fetch("http://ESP32_IP/readDHT");
+
+      } catch {
+        document.getElementById("status").innerText =
+          "❌ Không đọc được cảm biến!";
       }
     }
 
